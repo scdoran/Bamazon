@@ -13,10 +13,10 @@ var connection = mysql.createConnection({
 connection.connect(function(err){
 	if (err) throw err;
 	console.log("Connected as id: " + connection.threadId);
+	initialQuestion();
 });
 
 function initialQuestion(){
-
 	inquirer.prompt([
 		{
 			type: "input",
@@ -42,24 +42,26 @@ function purchase(product){
 		message: "How many would you like to purchase?"
 	}
 	]).then(function(answers){
-		console.log("You purchased " + answers.purchase + " " + product);
-		connection.query('SELECT"' + product + '"FROM products', function(err, res){
+		console.log("You purchased " + answers.purchase + " " + product + "(s).");
+
+		connection.query('SELECT * FROM products WHERE product_name="' + product + '"', function(err, res){
 		if (err) throw err;
-		if (product.stock_quantity >= answers.purchase){
+		if (res[0].stock_quantity >= answers.purchase){
 
-			var update = product.stock_quantity - answers.purchase;
-			var cost = answers.purchase * product.price;
+			var update = res[0].stock_quantity - answers.purchase;
+			var cost = answers.purchase * res[0].price;
 
-			connection.query('UPDATE products SET stock_quantity ="' + update + '"WHERE product_name = product', function(res){
+			connection.query('UPDATE products SET stock_quantity ="' + update + '"WHERE product_name ="' + product + '', function(res){
+				console.log("******************");
+				console.log("There are now " + update + " in stock.");
 				console.log("******************");
 				console.log("That will be a total of $" + cost);
+				initialQuestion();
 			});
-		} else {
+		} else if (res[0].stock_quantity < answers.purchase){
 			console.log("Not enough " + product + " in stock.");
-		}
-		initialQuestion();		
+			initialQuestion();
+		}		
 		});
 	});
 }
-
-initialQuestion();
