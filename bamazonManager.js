@@ -1,6 +1,8 @@
+// Creating a variable to require both mysql and inquirer npm packages.
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 
+// Creating a connection to the MySQL server.
 var connection = mysql.createConnection({
 	host: "localhost",
 	port: 3306,
@@ -10,12 +12,14 @@ var connection = mysql.createConnection({
 	database: "Bamazon"
 });
 
+// Connecting to the server and then launching the initial question and showing invetory if the connection is successful.
 connection.connect(function(err){
 	if (err) throw err;
 	console.log("Connected as id: " + connection.threadId);
 	initialQuestion();
 });
 
+// Function that runs the inital inquirer question.
 function initialQuestion(){
 	inquirer.prompt([
 		{
@@ -26,6 +30,7 @@ function initialQuestion(){
 		
 		}
 	]).then(function (answer) {
+		// Switch case needed depending on what the manager selects.
 	    switch (answer.menu) {
 	      case "View Products for Sale":
 	        viewProducts();
@@ -46,6 +51,7 @@ function initialQuestion(){
 	});
 }
 
+// Function that selects all data from the products table and shows it in the console.
 function viewProducts(){
 	connection.query('SELECT * FROM products', function(err, res){
 		if (err) throw err;
@@ -58,12 +64,13 @@ function viewProducts(){
 			console.log("Price: $" + res[i].price);
 			console.log("Quantity: " + res[i].stock_quantity);
 		}
-
+	// Pulls up the initial question. 
 	initialQuestion();	
 	
 	});
 }
 
+// Function that selects all products that have a quantity of less than 5000 from the products table and shows it in the console.
 function viewLow(){
 
 	connection.query('SELECT * FROM products WHERE stock_quantity < 5000', function(err, res){
@@ -76,12 +83,13 @@ function viewLow(){
 			console.log("Department: " + res[i].department_name);
 			console.log("Quantity: " + res[i].stock_quantity);
 		}
-
+	// Pulls up the initial question. 
 	initialQuestion();	
 
 	});
 }
 
+// Function that allows the manager to add more inventory to an existing product.
 function addInventory(){
 
 	inquirer.prompt([
@@ -97,12 +105,12 @@ function addInventory(){
 	}
 	]).then(function(answers){
 		console.log("You are updating " + answers.productName + ".");
-
+		// Selects the data based on product name...
 		connection.query('SELECT * FROM products WHERE product_name="' + answers.productName + '"', function(err, res){
 		if (err) throw err;
 
 			var update = res[0].stock_quantity + parseInt(answers.quantity);
-
+			// Updates the products based on adding the original stock quantity with the manager's quantity.
 			connection.query('UPDATE products SET stock_quantity ="' + update + '"WHERE product_name ="' + answers.productName + '', function(res){
 				console.log("******************");
 				console.log("There are now " + update + " in stock.");
@@ -113,7 +121,9 @@ function addInventory(){
 	});	
 }
 
+// Function that allows the manager to add new products.
 function addProduct(){
+	// Inquirer asks all questions in regard to the product name, department, price and quantity.
 	inquirer.prompt([
 	{
 		type: "input",
@@ -139,8 +149,7 @@ function addProduct(){
 	]).then(function(answers){
 		console.log("You are adding " + answers.productName + ".");
 
-		// console.log('INSERT INTO products (item_id, product_name, department_name, price, stock_quantity) VALUES ("' + answers.productName + '","' + answers.department + '","' + answers.price + '","' + answers.quantity + '")');
-
+		// Adds the new product based on the manager's input from inquire.
 		connection.query('INSERT INTO products (product_name, department_name, price, stock_quantity) VALUES ("' + answers.productName + '","' + answers.department + '","' + answers.price + '","' + answers.quantity + '")', function(err, res){
 		if (err) throw err;
 
