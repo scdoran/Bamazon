@@ -13,10 +13,25 @@ var connection = mysql.createConnection({
 connection.connect(function(err){
 	if (err) throw err;
 	console.log("Connected as id: " + connection.threadId);
-	initialQuestion();
+	showInventory();
+	setTimeout(initialQuestion, 1000);
 });
 
+function showInventory(){
+	connection.query('SELECT * FROM products', function(err, res){
+		for (var i = 0; i < res.length; i++) {
+			console.log("******************************************");
+			console.log("Item ID: " + res[i].item_id);
+			console.log("Product: " + res[i].product_name);
+			console.log("Department: " + res[i].department_name);
+			console.log("Price: $" + res[i].price);
+			console.log("Quantity: " + res[i].stock_quantity);
+		}
+	});
+}
+
 function initialQuestion(){
+
 	inquirer.prompt([
 		{
 			type: "input",
@@ -51,12 +66,16 @@ function purchase(product){
 			var update = res[0].stock_quantity - answers.purchase;
 			var cost = answers.purchase * res[0].price;
 
-			connection.query('UPDATE products SET stock_quantity ="' + update + '"WHERE product_name ="' + product + '', function(res){
+			connection.query('UPDATE products SET stock_quantity ="' + update + '" WHERE product_name ="' + product + '"', function(err, res){
+			
+			if (err) throw err;
+				
 				console.log("******************");
 				console.log("There are now " + update + " in stock.");
 				console.log("******************");
 				console.log("That will be a total of $" + cost);
-				initialQuestion();
+				showInventory();
+				setTimeout(initialQuestion, 1000);
 			});
 		} else if (res[0].stock_quantity < answers.purchase){
 			console.log("Not enough " + product + " in stock.");

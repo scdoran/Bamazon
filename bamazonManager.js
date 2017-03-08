@@ -50,7 +50,17 @@ function viewProducts(){
 	connection.query('SELECT * FROM products', function(err, res){
 		if (err) throw err;
 
-		console.log();		
+		for (var i = 0; i < res.length; i++) {
+			console.log("******************************************");
+			console.log("Item ID: " + res[i].item_id);
+			console.log("Product: " + res[i].product_name);
+			console.log("Department: " + res[i].department_name);
+			console.log("Price: $" + res[i].price);
+			console.log("Quantity: " + res[i].stock_quantity);
+		}
+
+	initialQuestion();	
+	
 	});
 }
 
@@ -59,7 +69,16 @@ function viewLow(){
 	connection.query('SELECT * FROM products WHERE stock_quantity < 5000', function(err, res){
 		if (err) throw err;
 
-		console.log();		
+		for (var i = 0; i < res.length; i++) {
+			console.log("******************************************");
+			console.log("Item ID: " + res[i].item_id);
+			console.log("Product: " + res[i].product_name);
+			console.log("Department: " + res[i].department_name);
+			console.log("Quantity: " + res[i].stock_quantity);
+		}
+
+	initialQuestion();	
+
 	});
 }
 
@@ -82,7 +101,7 @@ function addInventory(){
 		connection.query('SELECT * FROM products WHERE product_name="' + answers.productName + '"', function(err, res){
 		if (err) throw err;
 
-			var update = res[0].stock_quantity + answers.quantity;
+			var update = res[0].stock_quantity + parseInt(answers.quantity);
 
 			connection.query('UPDATE products SET stock_quantity ="' + update + '"WHERE product_name ="' + answers.productName + '', function(res){
 				console.log("******************");
@@ -91,7 +110,7 @@ function addInventory(){
 				initialQuestion();
 			});		
 		});
-	});
+	});	
 }
 
 function addProduct(){
@@ -120,7 +139,9 @@ function addProduct(){
 	]).then(function(answers){
 		console.log("You are adding " + answers.productName + ".");
 
-		connection.query('INSERT INTO products (item_id, product_name, department_name, price, stock_quantity) VALUES ("' + answers.productName + '","' + answers.department + '","' + answers.price + '","' + answers.quantity + '")', function(err, res){
+		// console.log('INSERT INTO products (item_id, product_name, department_name, price, stock_quantity) VALUES ("' + answers.productName + '","' + answers.department + '","' + answers.price + '","' + answers.quantity + '")');
+
+		connection.query('INSERT INTO products (product_name, department_name, price, stock_quantity) VALUES ("' + answers.productName + '","' + answers.department + '","' + answers.price + '","' + answers.quantity + '")', function(err, res){
 		if (err) throw err;
 
 		console.log("Item successfully added!");
